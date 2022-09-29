@@ -1,0 +1,97 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+#define maxsize 50
+
+typedef struct edgenode
+{
+	int front;
+	int rear;
+	int weight;
+}Edge;
+
+typedef struct table
+{
+	int head[maxsize];
+	Edge edge[maxsize];
+	int headnum, sidenum;
+}T;
+
+void creattable(T*&G)
+{
+	int i = 1;
+	G = (T*)malloc(sizeof(T));
+	printf("请输入结点数和边数\n");
+	scanf("%d,%d", &G->headnum, &G->sidenum);
+	for (i = 1; i <= G->headnum; i++) G->head[i] = i;
+	printf("请输入边与边的关系和权值（首结点，尾结点，权重）\n");
+	for (int j = 1; j <= G->sidenum; j++) 
+	{ 
+		scanf("%d,%d,%d", &G->edge[j].front, &G->edge[j].rear, &G->edge[j].weight); 
+	}
+}
+
+void printtable(T*G)
+{
+	printf("边序号\t起始结点\t结束结点\t权重\n");
+	for (int i = 1; i <= G->sidenum; i++)
+	{
+		printf("%d\t%d\t\t%d\t\t%d\n", i, G->edge[i].front, G->edge[i].rear, G->edge[i].weight);
+	}
+}
+
+void sort(T*G)
+{
+	Edge temp;
+	for (int i = 1; i < G->sidenum; i++)
+	{
+		for (int j = i + 1; j <= G->sidenum; j++)
+		{
+			if (G->edge[i].weight > G->edge[j].weight)
+			{
+				temp = G->edge[i];
+				G->edge[i] = G->edge[j];
+				G->edge[j] = temp;
+			}
+		}
+	}
+}
+
+int getroot(int parent[], int v)
+{
+	int t; t = v;
+	while(parent[t] > -1)
+	{
+		t = parent[t];
+	}
+	return t;
+}
+
+void Kruskal(T*G)
+{
+	int parent[maxsize];
+	for (int j = 0; j < maxsize; j++) parent[j] = -1;
+	int count = 0; int vex1, vex2;
+	for (int i = 1; i <= G->sidenum; i++)
+	{
+		vex1 = getroot(parent, G->edge[i].front);
+		vex2 = getroot(parent, G->edge[i].rear);
+		if (vex1 != vex2)
+		{
+			printf("%d->%d  ", G->edge[i].front, G->edge[i].rear);
+			parent[vex2] = vex1; count++;
+			if (count == G->headnum - 1) return;
+		}
+	}
+}
+int main()
+{
+	T*G; 
+	creattable(G);
+	sort(G);
+	printtable(G);
+	printf("用克鲁斯卡尔方法，最小生成树为：\n");
+	Kruskal(G); printf("\n");
+	return 0;
+}

@@ -1,0 +1,161 @@
+#define NULL 0
+#include<string.h>
+#include<stdio.h>
+
+typedef struct node
+ { char e[100];
+   int top;
+ }linkstack;
+
+typedef struct Node
+  { int c[100];
+    int top;
+  }link;
+
+char w[128];
+int i;
+
+char prec[7][7]=
+{
+">><<<>>",
+">><<<>>",
+">>>><>>",	 
+">>>><>>",
+"<<<<<=@",
+">>>>@>>",
+"<<<<<@="
+};
+char sign[]="+-*/()#";
+
+char precede(char a,char b)
+{int i,j;
+ i=j=0;
+ while(sign[i]!=a) i++;
+ while(sign[j]!=b) j++;
+ return(prec[i][j]);
+}
+
+int numb()
+   {int num;
+    if(w[i]>='0'&&w[i]<='9')
+     {num=w[i]-'0';
+      i++;
+      while(w[i]>='0'&&w[i]<='9')
+      {num=num*10+w[i]-'0';
+       i++;
+      }
+     return(num);
+     }
+    else return(0);
+   }
+
+void push1(linkstack *p,char c)
+   { p->e[p->top]=c;p->top++;
+    }
+
+void push2(link *p,int num)
+    {
+     p->c[p->top++]=num;
+    }
+
+char gettop1(linkstack *optr)
+    { char c;
+      c=optr->e[optr->top-1];
+      return(c);
+     }
+
+int gettop2(link *opnd)
+     { int num;
+       num=opnd->c[opnd->top-1];
+       return(num);
+     }
+
+
+char pop1(linkstack *optr)
+     {char c;
+      optr->top--;c=optr->e[optr->top];
+      return(c);
+      }
+
+
+
+int pop2(link *opnd)
+      {int num;
+       num=opnd->c[--opnd->top];
+       return(num);
+      }
+
+int operate(int a, char theta,int b)
+   {int num;
+    switch (theta)
+    {case '+': num=a+b;break;
+	 case '-': num=a-b;break;
+	 case '*': num=a*b;break;
+	 case '/': num=a/b;break;
+     }
+     return num;
+   }
+
+
+int evaluateexpression(void)
+	{int num; char theta; int a,b;
+	 linkstack s;link t;
+	 s.top=0;t.top=0;
+	 push1(&s,'#');
+	 i=0;
+	 while(w[i]!='#'||gettop1(&s)!='#')
+	 {
+	  num=numb();
+	  if(num) {push2(&t,num);}
+	  else
+	    switch(precede(gettop1(&s),w[i]))
+	    { case'<':push1(&s,w[i++]);break;
+	      case'=':pop1(&s);i++;break;
+	      case'>':{theta=pop1(&s); 
+			       a=pop2(&t);b=pop2(&t);
+		           push2(&t,operate(b,theta,a));break;}
+	    }
+	  }
+	  return(gettop2(&t));
+	}
+
+main()
+   {int x;
+	printf("表达式的计算!以#结束\n");
+	printf("请输入表达式：\n");
+	scanf("%s",w);
+	x=evaluateexpression();
+	printf("=%d\n",x);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

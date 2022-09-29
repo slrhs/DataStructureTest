@@ -1,0 +1,246 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#define NULL 0
+typedef struct  bitnode
+{
+	int data;
+	struct bitnode *lchild, *rchild;
+}bitnode, *bitree;
+typedef struct
+{
+	bitree link;
+	int flag;
+}stacktype;
+
+bitnode *create(bitnode *T)
+{
+	bitree s[20]; bitree q;
+	int i, j, x; i = 1;
+	printf("i,x=");
+	scanf("%d,%d", &i, &x);
+	while (i != 0)
+	{
+		q = (bitnode *)malloc(sizeof(bitnode));
+		q->data = x;
+		q->lchild = NULL;
+		q->rchild = NULL;
+		s[i] = q;
+		if (i == 1) T = q;
+		else{
+			j = i / 2;
+			if (i % 2 == 0) s[j]->lchild = q;
+			else s[j]->rchild = q;
+		}
+		printf("i,x=");
+		scanf("%d,%d", &i, &x);
+	}
+	return(T);
+}
+
+void preorder(bitnode  *T)
+{
+	bitree stack[20];
+	bitree p; int top;
+	top = 0;
+	p = T;
+	while (!((p == NULL) && (top == 0)))
+	{
+		while (p != NULL)
+		{
+			printf("%d  ", p->data);
+			if (top<19) stack[top++] = p;
+			else printf("error");
+			p = p->lchild;
+		}
+		p = stack[--top];
+		p = p->rchild;
+	}
+}
+
+void inorder(bitnode *T)
+{
+	bitree stack[20];
+	bitree p; int top;
+	p = T; top = 0;
+	while (p || top)
+	{
+		if (p) { stack[top++] = p; p = p->lchild; }
+		else{
+			p = stack[--top];
+			printf("%d  ", p->data);
+			p = p->rchild;
+		}
+	}
+}
+
+
+void lateorder(bitnode *T)
+{
+	stacktype  stack[20];
+	bitree p;
+	int top, sign;
+	top = -1;
+	p = T;
+	while (!((p == NULL) && (top == -1)))
+	{
+		if (p != NULL)
+		{
+			stack[++top].link = p;
+			stack[top].flag = 1;
+			p = p->lchild;
+		}
+		else{
+			p = stack[top].link;
+			sign = stack[top].flag;
+			top--;
+			if (sign == 1)
+			{
+				stack[++top].link = p;
+				stack[top].flag = 2;
+				p = p->rchild;
+			}
+			else{
+				printf("%d  ", p->data);
+				p = NULL;
+			}
+		}
+	}
+}
+
+
+void levelorder(bitree T)
+{
+	bitree queue[20];
+	int front, rear;
+	front = -1;
+	rear = 0;
+	queue[rear] = T;
+	while (front != rear)
+	{
+		front++;
+		printf("%d  ", queue[front]->data);
+		if (queue[front]->lchild != NULL)
+		{
+			rear++;
+			queue[rear] = queue[front]->lchild;
+		}
+		if (queue[front]->rchild != NULL)
+		{
+			rear++;
+			queue[rear] = queue[front]->rchild;
+		}
+	}
+}
+
+int getdepth(bitnode* T)
+{
+	if (T == NULL) return 0;  //空树，高度为0;
+	bitree queue[20];  //初始化一个空队列;
+	int front = -1, rear = -1;
+	int last = 0;
+	int level = 0;
+	bitree p;
+	queue[++rear] = T;
+	while (front <rear)
+	{
+		p = queue[++front]; 
+		if (p->lchild)
+		{
+			queue[++rear] = p->lchild;
+		}
+		if (p->rchild)
+		{
+			queue[++rear] = p->rchild; 
+		}
+
+		if (front == last)
+		{//当前层最后结点；
+			level++;
+			last = rear;
+		}
+	}
+	return level;
+}
+
+
+// 非递归，求二叉树中叶子节点的个数
+int leafcount(bitnode* T)
+{
+	int top = -1; // 栈为空
+	int count = 0;
+	bitnode* s[20]; // 申请一个栈空间
+	while (T != NULL || top != -1) // 当前树的根节点不为空 或 栈不为空（说明需要继续遍历）
+	{
+		while (T != NULL) // 当前树的根节点不为空
+		{
+			if (T->lchild == NULL && T->rchild == NULL) // 若当前根节点的左右子树都为空，则是叶子节点
+				count++;
+			s[++top] = T; // 先 ++top，然后将当前的根节点入栈
+			T = T->lchild; // 然后访问当前根节点的左子树
+		}
+		if (top != -1) // 若此时栈不为空（此时跳出了上面的while(T != NULL),说明了当前根节点的左子树为空）
+		{
+			T = s[top--]; // 先获取当前的根节点（即让当前的根节点出栈），然后 top--；
+			T = T->rchild; // 然后访问当前根节点的右子树
+		}
+	}
+	return count;
+}
+
+int treecount(bitnode*T)
+{
+	int top = -1; int count = 0;
+	bitnode*q[20];
+    while (T != NULL || top != -1)
+   {  
+		while(T != NULL)
+		{
+			count++;
+			q[++top] = T;
+			T = T->lchild;
+		}
+		if (top != -1)
+		{
+			T = q[top--];
+			T = T->rchild;
+		}
+	}	
+	return count;
+}
+
+void change(bitnode* T)
+{
+	bitnode* queue[20];
+	int front = -1;
+	int rear = 0;
+	queue[rear] = T;
+	while (rear != front)
+	{
+		bitnode* p = queue[++front];
+		bitnode* temp = p->lchild;
+		p->lchild = p->rchild;
+		p->rchild = temp;
+		if (p->lchild) queue[++rear] = p->lchild;
+		if (p->rchild) queue[++rear] = p->rchild;
+	}
+}
+
+main()
+{
+	bitnode *T; T = NULL;
+	printf("创建和遍历二叉树：\n");
+	T = create(T); printf("\n");
+	printf("先序遍历为： "); preorder(T); printf("\n");
+	printf("中序遍历为： "); inorder(T); printf("\n");
+	printf("后序遍历为： "); lateorder(T); printf("\n");
+	printf("层次遍历为： "); levelorder(T); printf("\n\n");
+	printf("二叉树深度为： "); printf("%d",getdepth(T)); printf("\n");
+	printf("叶子结点数为： "); printf("%d",leafcount(T)); printf("\n");
+	printf("树总结点数为： "); printf("%d", treecount(T)); printf("\n");
+	change(T); printf("\n");
+	printf("交换左右子树后，用先序遍历为： "); preorder(T); printf("\n");
+	printf("交换左右子树后，用中序遍历为： "); inorder(T); printf("\n");
+	printf("交换左右子树后，用后序遍历为： "); lateorder(T); printf("\n");
+	printf("交换左右子树后，用层次遍历为： "); levelorder(T); printf("\n\n");
+	
+}

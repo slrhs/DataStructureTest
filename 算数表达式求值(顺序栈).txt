@@ -1,0 +1,167 @@
+#define  _CRT_SECURE_NO_WARNINGS
+#define NULL 0
+#include<string.h>
+#include<stdio.h>
+
+typedef struct fuhao
+{
+	char fuhaoku[100];
+	int top;
+}fuhaostack;
+
+typedef struct shuju
+{
+	int shujuku[100];
+	int top;
+}shujustack;
+
+char prec[7][7] = { 
+	">><<<>>", 
+	">><<<>>", 
+	">>>><>>",
+    ">>>><>>", 
+    "<<<<<=@",
+    ">>>>@>>",
+    "<<<<<@=" };
+char sign[] = "+-*/()#";
+
+char precede(char a, char b)
+{
+	int i, j;
+	i = j = 0;
+	while (sign[i] != a) i++;
+	while (sign[j] != b) j++;
+	return(prec[i][j]);
+}
+
+char w[100];
+int i;
+
+int numb()
+{
+	int num;
+	if (w[i] >= '0'&&w[i] <= '9')
+	{
+		num = w[i] - '0';
+		i++;
+		while (w[i] >= '0'&&w[i] <= '9')
+		{
+			num = num * 10 + w[i] - '0';
+			i++;
+		}
+		return(num);
+	}
+	else
+	{
+		return(0);
+	}
+}
+
+void pushfuhao(fuhaostack*p, char c)
+{
+	p->fuhaoku[p->top] = c;
+	p->top++;
+}
+
+void pushshuju(shujustack*p, int b)
+{
+	p->shujuku[p->top] = b;
+	p->top++;
+}
+
+char gettopfuhao(fuhaostack*p)
+{
+	char c;
+	c = p->fuhaoku[p->top - 1];
+	return(c);
+}
+
+int  gettopshuju(shujustack*p)
+{
+	int b;
+	b = p->shujuku[p->top - 1];
+	return(b);
+}
+
+char popfuhao(fuhaostack*p)
+{
+	char c;
+	p->top--;
+	c = p->fuhaoku[p->top];
+	return(c);
+}
+
+int popshuju(shujustack*p)
+{
+	int b;
+	p->top--;
+	b = p->shujuku[p->top];
+	return(b);
+}
+
+int operate(int a, char fuhao, int b)
+{
+	int num;
+	switch (fuhao)
+	{
+	case '+': num = a + b; break;
+	case '-': num = a - b; break;
+	case '*': num = a*b; break;
+	case '/': num = a / b; break;
+	}
+	return num;
+}
+
+int  valueexpression()
+{
+	int num,a,b;
+	char yunsuanfu;
+	fuhaostack s;
+	shujustack t;
+	s.top = 0; t.top = 0;
+	pushfuhao(&s, '#');
+	i = 0;
+	while (w[i] != '#' || gettopfuhao(&s) != '#')
+	{
+		num = numb();
+		if (num)
+		{
+			pushshuju(&t, num);
+		}
+		else
+		{
+			switch (precede(gettopfuhao(&s), w[i]))
+			{
+			case '<':
+				pushfuhao(&s, w[i]);
+				i++;
+				break;
+			case '=':
+				popfuhao(&s);
+				i++;
+				break;
+			case '>':
+				yunsuanfu = popfuhao(&s);
+				a = popshuju(&t);
+				b = popshuju(&t);
+				pushshuju(&t, operate(b, yunsuanfu, a));
+				break;
+			}
+		}
+	}
+	return(gettopshuju(&t));
+}
+
+int main()
+{
+	int x;
+	printf("请输入算数表达式（最后以#结束）\n");
+		scanf("%s", w);
+	x = valueexpression();
+	printf("=%d\n", x);
+}
+
+
+
+
+

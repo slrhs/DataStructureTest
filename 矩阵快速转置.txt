@@ -1,0 +1,95 @@
+#define MAXSIZE 1000
+#define  _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+
+typedef struct       
+{
+	int row, col;       
+	int e;         
+}Triple;
+
+typedef struct
+{
+	Triple data[MAXSIZE + 1];
+		int m, n, len;  
+}TSMatrix;
+
+
+void init_matrix(TSMatrix*M)
+{
+	int x, y, z;
+	int mrow = 0, mcol = 0; M->len = 0;
+	printf("请输入需要转置的矩阵的行数row，列数col，数据e，输入0,0,0结束输入，提醒英文输入\n");
+	for (int i = 1;; i++)
+	{
+		scanf("%d,%d,%d", &x, &y, &z);
+		if (x ==0 &&y ==0&&z==0) break;
+		M->data[i].row = x; M->data[i].col = y; M->data[i].e = z;
+		M->len++;
+		if (mrow < x) mrow = x;
+		if (mcol < y) mcol = y;
+	}
+	M->m = mrow; M->n = mcol;
+}
+
+void FastTransMatrix(TSMatrix M, TSMatrix* T)
+{
+	T->n = M.m ; T->m = M.n; T->len = M.len; int i, t, j, p, q;
+	if (T->len)
+	{
+		int number[100]; int position[100];
+		for (i = 1; i <=M.n; i++) number[i] = 0;
+		for (t = 1; t <= M.len; t++) number[M.data[t].col]++;
+		position[1] = 1;
+		for (j = 2; j <=M.n; j++) position[j] = position[j - 1] + number[j - 1];
+		for (p = 1; p <=M.len; p++)
+		{
+			j = M.data[p].col; q = position[j];
+			T->data[q].row = M.data[p].col;
+			T->data[q].col = M.data[p].row;
+			T->data[q].e = M.data[p].e;
+			position[j]++;
+		}
+	}
+}
+
+void show_matrix(TSMatrix *T, int p)
+{
+	int shuju[100] = { 0 };
+	int k=0;
+	for (int i = 1; i <= T->len; i++)
+	{
+		k = ((T->data[i].row) - 1)*(T->n) + (T->data[i].col) ;
+		shuju[k] = T->data[i].e;
+	}
+	if (p == 1) { printf("原来的矩阵为\n"); }
+	else { printf("转置后的矩阵为\n"); }
+	for (int j = 1; j <= T->m*T->n; j++)
+	{
+		printf("%5d", shuju[j]);
+		if (j % T->n == 0)printf("\n");
+	}
+	printf("\n");
+}
+
+void show_matrix2(TSMatrix *T)
+{
+	printf("转置矩阵的三元组输出为：\n");
+	for (int i = 1; i <= T->len; i++)
+	{
+		printf(" %d  %d  %d  \n", T->data[i].row, T->data[i].col, T->data[i].e);
+	}
+}
+
+void main()
+{
+	TSMatrix M;
+	TSMatrix T;
+	init_matrix(&M);
+	show_matrix(&M, 1);
+	FastTransMatrix(M, &T);
+	show_matrix(&T, 2);
+	show_matrix2(&T);
+	system("pause");
+}

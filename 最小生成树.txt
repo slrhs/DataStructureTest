@@ -1,0 +1,53 @@
+#define Max 200
+
+typedef struct
+{
+int adj；
+int low;
+}edge;
+
+int G[20][20];
+
+int min(edge closedge[],int n)
+{ int i,t,l;
+  t=32767;
+  for(i=1;i<=n;i++)
+  if((closedge[i].low)&&(closedge[i].low<t)) {t=closedge[i].low;l=i;}
+  return l;
+}
+
+void minspantree(int u,int n,edge closedge[])//起点，头结点数，一维数组，G才是邻接矩阵
+{ int i,j,w,k;
+  for(i=1;i<=n;i++)
+   if(i!=u){ closedge[i].adj=u;
+	     closedge[i].low=G[u][i];}
+   closedge[u].low=0;
+//对输入的结点初始化
+   for(i=1;i<n;i++)
+   { k=min(closedge,n);
+     printf("(%d,%d)",closedge[k].adj,k);
+     closedge[k].low=0;
+     for(j=1;j<=n;j++)
+       if(G[k][j]<closedge[j].low)
+	 {closedge[j].adj=k;closedge[j].low=G[k][j];}
+    }
+  }
+
+ main()
+ { edge closedge[20] ;
+  int i,n,m,j,w,q;int u;
+  printf("请输入顶点数和边数，格式为（顶点数，边数）\n");
+  scanf("%d,%d",&n,&m);
+  for(i=1;i<=n;i++)
+    for(j=1;j<=n;j++)
+      G[i][j]=32767;
+   printf("请输入每条边的（起点，终点，权）\n");
+     for(q=1;q<=m;q++)
+     {scanf("%d,%d,%d",&i,&j,&w);
+       G[i][j]=G[j][i]=w;
+     }
+   printf("请输入起点!\n");
+   scanf("%d",&u);
+   minspantree(u,n,closedge);
+ }
+

@@ -1,0 +1,357 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <conio.h>
+#define MAX 32767
+#define maxsize 50
+
+int table[50][50]; int dist[8]; int path[8]; 
+int headnode = 7, side, s, f, w, t;
+char*numtoname[8] =
+{ " ", "江阳路南校区", "江阳路北校区", "水利学院校区", "工学院校区", "医学院校区", "农学院校区", "瘦西湖校区" };
+typedef struct
+{
+	int near;
+	int data;
+}edge;//prime算法中的一位结构体数组closedge的元素
+edge closedge[50];
+
+typedef struct node
+{
+	int near;
+	int info;
+	struct node*next;
+}edgelistnode;
+typedef struct          //创建邻接表进行拓扑排序
+{
+	int indegree;
+	int data;
+	edgelistnode*firstarc;
+}headlistnode;
+headlistnode listgraph[maxsize];
+
+void printlistgraph(headlistnode listgraph[])
+{
+	printf("─────────────────────────────────────────────────────\n");
+	for (int i = 1; i <= headnode; i++)
+	{
+		printf("  %10s", numtoname[listgraph[i].data]);
+		edgelistnode*p = listgraph[i].firstarc;
+		printf("  入度数： %d    邻接校区：", (listgraph[i].indegree));
+		while (p)
+		{
+			printf("[%8s]、", numtoname[p->near]);
+			p = p->next;
+		}
+		printf("(终点)\n");
+		if (i<headnode)printf("─────────────────────────────────────────────────────\n");
+	}
+	printf("─────────────────────────────────────────────────────\n");
+}
+void tuopusort(headlistnode listgraph[],int c,int stack1[maxsize],int ve[maxsize])
+{
+	int put, count = 0, loc, num = 1;
+	int stack[maxsize]; int top = 0;
+	for (int i = 1; i <= headnode; i++)
+	{
+		ve[i] = 0;
+		if (!listgraph[i].indegree)
+		{
+			stack[++top] = i;
+		}
+	}
+	while (top)
+	{
+		put = stack[top--]; stack1[num++] = put;
+		if (c == 1)
+		{
+			if (count < headnode - 1){ printf("[%s]─>", numtoname[listgraph[put].data]); }
+			else{ printf("[%s]\n", numtoname[listgraph[put].data]); }
+		}
+		count++;
+		edgelistnode*p = listgraph[put].firstarc;
+		while (p)
+		{
+			loc = p->near;
+			listgraph[loc].indegree--;
+			if (!listgraph[loc].indegree)
+			{
+				stack[++top] = loc;
+			}
+			if (ve[put] + p->info > ve[loc]) ve[loc] = ve[put] + p->info;
+			p = p->next;
+		}
+	}
+	if (count !=headnode) printf("校区地图中存在环，无法拓扑排序\n");
+	printf("\n");
+}
+void CriticalPath(headlistnode listgraph[],int stack1[maxsize],int ve[maxsize])
+{
+	int vl[maxsize], j, k, dut, ae, al;char* flag; edgelistnode*p;
+	for (int i = 1; i <= headnode; i++) vl[i] = ve[headnode];
+		for (int i = headnode; i >=1; i--)
+		{
+			j = stack1[i]; p = listgraph[j].firstarc;
+			while (p)
+			{
+				k = p->near; dut = p->info;
+				if (vl[k] - dut < vl[j]) vl[j] = vl[k] - dut;
+				p = p->next;
+			}
+		}
+		printf("各校区铺设路线的情况:\n");
+		printf("────────────────────────────\n");
+		for (j = 1; j <= headnode; j++)
+			for (p = listgraph[j].firstarc; p != NULL; p = p->next)
+			{
+				k = p->near; dut = p->info;
+				ae = ve[j]; al = vl[k] - dut;
+				if (ae == al) { flag = "关键路径"; }
+				else{ flag = " 无"; };
+				printf("[%s]->[%s]：\n",numtoname[j], numtoname[k]);
+				printf("架设校园网所需要的时间：%d 天\n", dut);
+				printf("活动最早发生时间：%d 天,最迟发生时间：%d 天,标注：%s\n\n", ae, al, flag);
+				printf("────────────────────────────\n");
+			}
+}
+
+typedef struct 
+{
+	int front;
+	int rear;
+	int weight;
+}Edge;//克鲁斯卡尔算法里的起始点尾结点权重表格元素
+
+typedef struct table
+{
+	int head[maxsize];
+	Edge edge[maxsize];
+}T;//克鲁斯卡尔算法表格
+T*Gk;
+
+void sort(T*G)
+{
+	Edge temp;
+	for (int i = 1; i < side; i++)
+	{
+		for (int j = i + 1; j <= side; j++)
+		{
+			if (G->edge[i].weight > G->edge[j].weight)
+			{
+				temp = G->edge[i];
+				G->edge[i] = G->edge[j];
+				G->edge[j] = temp;
+			}
+		}
+	}
+}
+int getroot(int parent[], int v)
+{
+	int t; t = v;
+	while (parent[t] > -1)
+	{
+		t = parent[t];
+	}
+	return t;
+}
+void Kruskal(T*G)
+{
+	int parent[maxsize];
+	for (int j = 0; j < maxsize; j++) parent[j] = -1;
+	int count = 0; int vex1, vex2;
+	for (int i = 1; i <= side; i++)
+	{
+		vex1 = getroot(parent, G->edge[i].front);
+		vex2 = getroot(parent, G->edge[i].rear);
+		if (vex1 != vex2)
+		{
+			printf("[%s->%s]\n", numtoname[G->edge[i].front], numtoname[G->edge[i].rear]);
+			parent[vex2] = vex1; count++;
+			if (count == headnode - 1) return;
+		}
+	}
+}
+int min(edge closedge[], int headnode)
+{
+	int min = MAX, loc;
+	for (int i = 0; i <= headnode; i++)
+	{
+		if ((closedge[i].data) && (closedge[i].data < min))
+		{
+			min = closedge[i].data; loc = i;
+		}
+	}
+	return loc;
+}
+
+void minspantree(int t, int headnode, edge closedge[])
+{
+	int loc; 
+	for (int i = 1; i <= headnode; i++)
+	{
+		if (i != t)
+		{
+			closedge[i].near = t;
+			closedge[i].data = table[t][i];
+		}
+	}
+	closedge[t].data = 0; printf("prime算法：校园网架设方案为：\n");
+	for (int i = 1; i < headnode; i++)
+	{
+		loc = min(closedge, headnode);
+		printf("[%s─>%s]\n", numtoname[closedge[loc].near], numtoname[loc]);
+		closedge[loc].data = 0;
+		for (int j = 1; j <= headnode; j++)
+		{
+			if (closedge[j].data > table[loc][j])
+			{
+				closedge[j].near = loc;
+				closedge[j].data = table[loc][j];
+			}
+		}
+	}
+}
+void menu1()
+{
+	printf("┌──扬州大学──七个校区──┐\n");
+	printf("│  1─	 江阳路南校区         │\n");
+	printf("├──────────────┤\n");
+	printf("│  2─	 江阳路北校区         │\n");
+	printf("├──────────────┤\n");
+	printf("│  3─	 水利学院校区         │\n");
+	printf("├──────────────┤\n");
+	printf("│  4─	 工学院校区           │\n");
+	printf("├──────────────┤\n");
+	printf("│  5─	 医学院校区           │\n");
+	printf("├──────────────┤\n");
+	printf("│  6─	 农学院校区           │\n");
+	printf("├──────────────┤\n");
+	printf("│  7─	 瘦西湖校区           │\n");
+	printf("└──────────────┘\n");
+	printf("\n");
+}
+void initgraph(T*&Gk, headlistnode listgraph[])//prime算法和克鲁斯卡尔算法，两表综合初始化
+{
+	Gk = (T*)malloc(sizeof(T)); menu1(); 
+	printf("\n根据实地考察，请输入校园网预计铺建的条数：", side);
+	scanf("%d", &side);
+	for (int i = 1; i <= headnode; i++)
+	{
+		Gk->head[i] = i; 
+		listgraph[i].data = i;
+		listgraph[i].firstarc = NULL; listgraph[i].indegree = 0;
+		for (int j = 1; j <= headnode; j++)
+		{
+			table[i][j] = MAX;
+		}
+	}
+	printf("请输入相邻校区的（起点校区，终点校区，距离）\n");
+	for (int k = 1; k <= side; k++)
+	{
+		scanf("%d,%d,%d", &s, &f, &w);
+		Gk->edge[k].front = s; Gk->edge[k].rear = f; Gk->edge[k].weight = w;
+		table[s][f] = table[f][s] = w;
+		edgelistnode*p = (edgelistnode*)malloc(sizeof(edgelistnode));
+		p->near = f; p->info = w;
+		p->next = listgraph[s].firstarc;
+		listgraph[s].firstarc = p;
+		listgraph[f].indegree++;
+	}
+}
+int findmindist(int dist[], int s[])
+{
+	int mindata; int temp[8] = {0,0,0,0,0,0,0,0}, k = 1,loc=0;
+	for (int i = 1; i <= headnode; i++)  if ((!s[i])&&(dist[i]!=MAX)) temp[k++] = dist[i];
+	mindata = temp[1];
+	for (int j = 2; temp[j] != 0; j++)
+	{
+		if (temp[j] < mindata) mindata = temp[j]; 
+	}
+	for (int i = 1; i <= headnode; i++)  if ((!s[i]) &&( dist[i] == mindata)) loc = i;
+	return loc;
+}
+void Dijkstra(int table[50][50], int v)
+{
+	int s[8] = { MAX, 0, 0, 0, 0, 0, 0, 0 }, count = 1, min;
+	for (int i = 1; i <= headnode; i++)
+	{
+		dist[i] = table[v][i];
+		if (dist[i] != MAX)
+		{
+			path[i] = 1;
+		}
+		else
+		{
+			path[i] = -1;
+		}
+	}
+	s[v] = 1;
+	while (count < headnode)
+	{
+		min = findmindist(dist, s);
+		s[min] = 1;
+		for (int i = 1; i <= headnode; i++)
+		{
+			if ((s[i] == 0) && (dist[i] > dist[min] + table[min][i]))
+			{
+				dist[i] = dist[min] + table[min][i];
+				path[i] = min;
+			}
+		}
+		count++;
+	}
+		printf("江阳路南校区到其它校区的最短距离为：\n");
+		for (int j = 2; j <= headnode; j++)
+		{
+			printf("[江阳路南校区]->[%8s]：%d 千米\n", numtoname[j], dist[j]);
+		}
+}
+void menu()
+{
+	printf("┌────────目录────────┐\n");
+	printf("│  1─  输入校区之间的信息           │\n");
+	printf("├──────────────────┤\n");
+	printf("│  2─	 校园网架设方案               │\n");
+	printf("├──────────────────┤\n");
+	printf("│  3─	 江阳南路校区的最短距离       │\n");
+	printf("├──────────────────┤\n");
+	printf("│  4─	 七个校区求拓扑排序和关键路径 │\n");
+	printf("└──────────────────┘\n");
+	printf(" 请在1~4中选择\n\n"); 
+}
+
+int main()
+{
+	menu(); int ve[maxsize]; int stack1[maxsize];
+	while (1){
+	switch (_getch())
+	{
+	case '1':
+		initgraph(Gk, listgraph);
+		sort(Gk); printf("\n");
+		system("cls");
+		menu();
+		break;
+	case '2':
+		system("CLS"); menu(); menu1();
+		printf("请输入校园网架设的起点：\n");
+		scanf("%d", &t); printf("\n");
+		minspantree(t, headnode, closedge);
+		printf("\n"); printf("克鲁斯卡尔算法：校园网架设方案为：\n");
+		Kruskal(Gk); printf("\n");
+		break;
+	case '3':
+		system("CLS"); menu(); menu1();
+		Dijkstra(table, 1);  printf("\n");
+		break;
+	case '4':
+		system("CLS"); menu(); menu1(); 
+		printlistgraph(listgraph);
+		printf("七个校区拓扑排序后的结果为：\n");
+		tuopusort(listgraph,1,stack1,ve);
+		CriticalPath(listgraph,stack1,ve);
+		break;
+	}
+	}
+}

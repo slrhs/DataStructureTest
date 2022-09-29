@@ -1,0 +1,165 @@
+#define NULL 0
+typedef struct  bitnode
+{
+	int data;
+	struct bitnode *lchild, *rchild;
+}bitnode, *bitree;
+
+bitnode * create(bitnode *T)
+{
+	int x;
+	printf("请输入:");
+	scanf("%d", &x);
+	if (x == 0) T = NULL;
+	else{
+		T = (bitnode *)malloc(sizeof(bitnode));
+		T->data = x;
+		T->lchild = create(T->lchild);
+		T->rchild = create(T->rchild);
+	}
+	return(T);
+}
+
+void preorder(bitnode  *T)
+{
+	if (T)
+	{
+		printf("%d ", T->data);
+		preorder(T->lchild);
+		preorder(T->rchild);
+	}
+}
+
+void inorder(bitnode *T)
+{
+	if (T)
+	{
+		inorder(T->lchild);
+		printf("%d ", T->data);
+		inorder(T->rchild);
+	}
+}
+
+
+void lateorder(bitnode *T)
+{
+	if (T)
+	{
+		lateorder(T->lchild);
+		lateorder(T->rchild);
+		printf("%d ", T->data);
+	}
+}
+
+void levelorder(bitree T)
+{
+	bitree queue[20];
+	int front, rear;
+	front = -1;
+	rear = 0;
+	queue[rear] = T;
+	while (front != rear)
+	{
+		front++;
+		printf("%d ", queue[front]->data);
+		if (queue[front]->lchild != NULL)
+		{
+			rear++;
+			queue[rear] = queue[front]->lchild;
+		}
+		if (queue[front]->rchild != NULL)
+		{
+			rear++;
+			queue[rear] = queue[front]->rchild;
+		}
+	}
+}
+
+int getDepth(bitnode *T)
+{
+	int left, right;
+	if (T== NULL)    
+		return 0;
+	else
+	{
+		left = getDepth(T->lchild);    
+		right = getDepth(T->rchild);
+		return left > right ? (left+1 ) : (right +1);   
+	}
+}
+
+int leafcount(bitnode* T)
+{
+	if (T == NULL)
+	{
+		return 0;
+	}
+	if (T->lchild == NULL && T->rchild == NULL)
+	{
+		return 1;
+	}
+	return leafcount(T->lchild) + leafcount(T->rchild);
+}
+
+int treecount(bitnode* T)
+{
+	if (T == NULL)
+	{
+		return 0;
+	}
+	if (T->lchild == NULL && T->rchild == NULL)
+	{
+		return 1;
+	}
+	return 1 + treecount(T->lchild) + treecount(T->rchild);
+}
+
+void change(bitnode* T)
+{
+	if (T == NULL) return;
+	else
+	{
+		bitnode* temp = T->lchild;
+		T->lchild = T->rchild;
+		T->rchild = temp;
+		change(T->lchild);
+		change(T->rchild);
+	}
+}
+
+
+main()
+{
+	int num = 0;
+	bitnode *T; T = NULL;
+	printf("创建和遍历树，并求出树的相关信息\n");
+	T = create(T);
+	printf("\n");
+	printf("先序序列为：\n");
+	preorder(T);
+	printf("\n中序序列为：\n");
+	inorder(T);
+	printf("\n后序序列为：\n");
+	lateorder(T); 
+	printf("\n层次序列为：\n");
+	levelorder(T);
+	printf("\n");
+	printf("\n二叉树深度为：\n");
+	num = getDepth(T); printf("%d", num);
+	printf("\n二叉树叶子数为：\n");
+	printf("%d",leafcount(T));
+	printf("\n二叉树结点数为：\n");
+	printf("%d", treecount(T));
+	printf("\n");
+	change(T);
+	printf("\n交换左右子树后用先序序列输出为：\n");
+	preorder(T);
+	printf("\n交换左右子树后用中序序列输出为：\n");
+	inorder(T);
+	printf("\n交换左右子树后用后序序列输出为：\n");
+	lateorder(T);
+	printf("\n交换左右子树后用层次序列输出为：\n");
+	levelorder(T);
+	printf("\n");
+	printf("\n");
+}

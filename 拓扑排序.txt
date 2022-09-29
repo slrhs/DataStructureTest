@@ -1,0 +1,103 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
+#include<malloc.h>
+#define maxsize 50
+
+typedef struct node
+{
+	int near;
+	struct node*next;
+}edgenode;
+
+typedef struct
+{
+	int indegree;
+	int data;
+	edgenode*firstarc;
+}headnode;
+
+typedef struct
+{
+	headnode table[maxsize];
+	int headnum, sidenum;
+}graph;
+
+void creatgraph(graph*&G)
+{
+	int s, f;
+	G = (graph*)malloc(sizeof(graph));
+	printf("请输入顶点数，边数: ");
+	scanf("%d,%d", &G->headnum, &G->sidenum);
+	for (int i = 1; i <= G->headnum; i++)
+	{
+		G->table[i].data = i;
+		G->table[i].firstarc = NULL; G->table[i].indegree = 0;
+	}
+	printf("请输入边的起点，终点：\n");
+	for (int j = 0; j < G->sidenum; j++)
+	{
+		scanf("%d,%d", &s, &f);
+		edgenode*p = (edgenode*)malloc(sizeof(edgenode));
+		p->near = f;
+		p->next = G->table[s].firstarc;
+		G->table[s].firstarc = p;
+		G->table[f].indegree++;
+	}
+}
+void printgraph(graph*G)
+{
+	printf("───────────────────────\n");
+	for (int i = 1; i <= G->headnum; i++)
+	{
+		printf("  V%d", G->table[i].data);
+		edgenode*p = G->table[i].firstarc;
+		printf("  入度数： %d    邻接点：", (G->table[i].indegree));
+		while (p)
+		{
+			printf("─>%d", p->near);
+			p = p->next;
+		}
+		printf("Λ\n");
+		if(i<G->headnum)printf("───────────────────────\n");
+	}
+	printf("───────────────────────\n");
+}
+void tuopusort(graph*G)
+{
+	int put, count=0, loc;
+	int stack[maxsize]; int top = 0;
+	for (int i = 1; i <= G->headnum; i++)
+	{
+		if (!G->table[i].indegree)
+		{
+			stack[++top] = i; 
+		}
+	}
+	while (top)
+	{
+		put = stack[top--];
+		if (count < G->headnum-1){ printf("V%d─>", G->table[put].data); }
+		else{ printf("V%d\n", G->table[put].data); }
+		count++;
+		edgenode*p = G->table[put].firstarc;
+		while (p)
+		{
+			loc = p->near;
+			G->table[loc].indegree--;
+			if (!G->table[loc].indegree)
+			{stack[++top] = loc;}
+			p = p->next;
+		}
+	}
+	if (count != G->headnum) printf("图中网存在环，无法拓扑排序\n");
+	printf("\n");
+}
+int main()
+{
+	graph*G;
+	creatgraph(G);
+	printgraph(G);
+	printf("拓扑排序后的结果为：\n"); 
+	tuopusort(G);
+	return 0;
+}

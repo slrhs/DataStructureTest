@@ -1,0 +1,142 @@
+#define  _CRT_SECURE_NO_WARNINGS
+#define MAXSIZE  9
+#include<string.h>
+#include<stdio.h>
+#include <windows.h>
+int count = 0;
+typedef struct cycle
+{
+	int data[MAXSIZE];
+	int front, rear;
+}seq;
+seq  Q;
+
+void  pushseq(seq *Q, int*x)
+{
+	if ((Q->rear + 1) % MAXSIZE == Q->front)
+	{
+		printf("排队人数已满\n");
+		exit(0);
+	}
+	Q->rear = (Q->rear + 1) % MAXSIZE;
+	Q->data[Q->rear] = *x;
+}
+
+int popseq(seq* Q)
+{
+	int  result;
+	if (Q->rear == Q->front)
+	{
+		printf("没有人排队\n");
+		exit(0);
+	}
+	Q->front = (Q->front + 1) % MAXSIZE;
+	result = Q->data[Q->front];
+	return result;
+}
+
+int getfront(seq*Q)
+{
+	return Q->data[Q->front];
+}
+
+int numseq(seq* Q)
+{
+	return  ((Q->rear)-(Q->front)+MAXSIZE)%MAXSIZE;
+}
+menu()
+{
+	printf("┌───────┬──────────────────────────────────┐\n");
+	printf("│  1\t│\t客户：  叫号               │\n");
+	printf("│───────│──────────────────────────────────│\n");
+	printf("│  2\t│\t柜员：  取号               │\n");
+	printf("│───────│──────────────────────────────────│\n");
+	printf("│  3\t│\t柜员：  选定窗口，处理完毕 │\n");
+	printf("│───────│──────────────────────────────────│\n");
+	printf("│  4\t│\t柜员：  退出程序           │\n");
+	printf("└───────┴──────────────────────────────────┘\n");
+	printf("请输入1~4\n");
+}
+
+int a[4] = { 0, 0, 0, 0 };
+keydown()
+{
+	
+	int call;
+	int k = 0; int n; int i; int p; int j = 0; int x;
+	scanf("%d", &call);
+	switch (call)
+	{
+	case 1:
+		
+		++count;
+		pushseq(&Q,&count);
+		if (count <= 4)
+		{
+			p = 0;
+		}
+		else
+		{
+			for (i = 0; i<4; i++)
+			{
+				if (a[i] == 0)
+				{
+					j++;
+				}
+			}
+			switch (j)
+			{
+			case 0:p = numseq(&Q); break;
+			case 1:p = numseq(&Q) - 1; break;
+			case 2:p = numseq(&Q) - 2; if (p < 0) p = 0; break;
+			case 3:p = numseq(&Q) - 3; if (p < 0) p = 0; break;
+			case 4:p = numseq(&Q) - 4; if (p < 0) p = 0; break;
+			}
+		}
+		printf("你的编号为%d号，你前面还有%d个人，请耐心等候\n\n", count, p);
+		break;
+
+	case 2:
+		for (n = 0; n<4; n++)
+		{
+			if (a[n]==0)
+			{
+				a[n] = popseq(&Q); 
+				k = n+1 ;
+				break;
+			}
+		}
+		if (count <= 4) { printf("请%d号前往%d号办理窗口\n\n", count, k); }
+		else{ printf("请%d号前往%d号办理窗口\n\n", getfront(&Q), k); }
+		break;
+	case 3:
+		
+		printf("请输入几号窗口处理完毕\n");
+		scanf("%d", &x);
+		switch (x)
+		{
+		case 1:a[0] = 0; break;
+		case 2:a[1] = 0; break;
+		case 3:a[2] = 0; break;
+		case 4:a[3] = 0; break;
+		}
+		printf("%d号窗口处理完毕,可以接待下一位\n\n", x);
+		break;
+	case 4:
+		printf("欢迎下次使用，按回车退出程序\n\n");
+		exit(0);
+	}
+
+}
+int main()
+{
+	Q.front = 0;
+	Q.rear = 0;
+	menu();
+	while (1)
+	{
+		keydown();
+	}
+	return 0;
+}
+

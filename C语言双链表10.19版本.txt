@@ -1,0 +1,318 @@
+#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>//标准输入输出
+#include<stdlib.h>
+#include<string.h>//字符串头文件
+int n = 10;
+
+struct vege
+{
+	int  num;
+	char   caiming[20];
+	char   maicairen[20];
+	float   danjia;
+	float   jin;
+	float   zhekou;
+	float  price;
+	int  rank;
+};
+
+typedef  struct  SHUCAI
+{
+	struct vege data;
+	struct  SHUCAI  * next;
+	struct  SHUCAI  * prior;
+}shucai;
+
+shucai*list = NULL;
+
+shucai*createlist()
+{
+	shucai*head = (shucai*)malloc(sizeof(shucai));
+	head->next = NULL;
+	head->prior = NULL;
+	return head;
+}
+
+void savefile(shucai*head, char*filename);
+
+shucai*createnode(struct vege data)
+{
+	shucai*newnode = (shucai*)malloc(sizeof(shucai));
+	newnode->data = data;
+	newnode->next = NULL;
+	newnode->prior = NULL;
+	return newnode;
+}
+
+void insertbytail(shucai*head, struct vege data)
+{
+	shucai*newnode = createnode(data);
+	shucai*tailnode = head;
+	while (tailnode->next != NULL)
+	{
+		tailnode = tailnode->next;
+	}
+	tailnode->next = newnode;
+	newnode->prior = tailnode;
+}
+
+void insert(shucai*head, struct vege data)
+{
+	shucai*phead = head;
+	shucai*p = (shucai*)malloc(sizeof(shucai));
+	p->data = data;
+	while (phead->data.num < p->data.num&&phead->next != NULL)
+	{
+		phead = phead->next;
+	}
+	if (phead->next != NULL)
+	{
+		p->prior = phead->prior;
+		phead->prior->next = p;
+		p->next = phead;
+		phead->prior = p;
+	}
+	else
+	{
+		p->prior = phead;
+		p->next = NULL;
+		phead->next = p;
+	}
+}
+
+void delete(shucai*head, char*name)
+{
+	shucai*prepos = head;
+	shucai*pos = head->next;
+	while (pos != NULL&&strcmp(pos->data.caiming, name))
+	{
+		prepos = pos;
+		pos = pos->next;
+	}
+	if (pos == NULL)
+	{
+		printf("未找到\n");
+		return;
+	}
+	else
+	{
+		prepos->next = pos->next;
+		free(pos);
+	}
+}
+
+shucai*search(shucai*head, char*name)
+{
+	shucai*pmove = head;
+	while (pmove != NULL&&strcmp(pmove->data.maicairen, name))
+	{
+		pmove = pmove->next;
+
+	}
+	return pmove;
+}
+void  typesum(shucai*head, int n)
+{
+	int i;
+	shucai*pmove = head->next;
+	for (i = 0; i < n; i++)
+	{
+		pmove->data.price = pmove->data.danjia*pmove->data.jin*(1 - pmove->data.zhekou);
+		printf("─────────┃───────────────────────────────────┃\n");
+		printf("菜名:%s┃\t该蔬菜价格为:%f        ┃\n", pmove->data.caiming, pmove->data.price);
+		pmove = pmove->next;
+	}
+	printf("─────────┃───────────────────────────────────┃\n");
+}
+
+void sum(shucai*head, int n)
+{
+	int i;
+	float allsum = 0;
+	float allsumjiage = 0;
+	shucai*pmove = head->next;
+	for (i = 0; i< n; i++)
+	{
+		allsum = allsum + pmove->data.jin;
+		allsumjiage = allsumjiage + pmove->data.danjia*pmove->data.jin*(1 - pmove->data.zhekou);
+		pmove = pmove->next;
+	}
+	printf("━━━━━━━━━━━━━━━━━━━┃━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("总价格为%f元┃\t总数量为%f斤 ┃\n", allsumjiage, allsum);
+	printf("━━━━━━━━━━━━━━━━━━━┃━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+}
+
+void sort(shucai*head, int n)
+{
+	int i, j;
+	shucai*p = head->next;
+	for (i = 0; i < n; i++)
+	{
+		p->data.price = p->data.danjia*p->data.jin*(1 - p->data.zhekou);
+		p = p->next;
+	}
+	float temp;
+	shucai*pmove;
+	shucai*pnext;
+	pmove = head->next;
+	printf("━━━━━━━━━━━━━━━━━┃\n");
+	printf("菜名\t总价格   ┃\n");
+	while (pmove)
+	{
+		pnext = pmove->next;
+		while (pnext)
+		{
+			if (pmove->data.price < pnext->data.price)
+			{
+				temp = pmove->data.price;
+				pmove->data.price = pnext->data.price;
+				pnext->data.price = temp;
+			}
+			pnext = pnext->next;
+		}
+		printf("━━━━━━━━━━━━━━━━━┃\n");
+		printf("%s\t%f ┃\n", pmove->data.caiming, pmove->data.price);
+		pmove = pmove->next;
+	}
+	printf("━━━━━━━━━━━━━━━━━┃\n");
+}
+
+void print(shucai*head)
+{
+	shucai*pmove = head->next;
+	printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┐\n");
+	printf("编号\t菜名\t卖菜人\t单价\t\t数量\t\t折扣    │\n");
+	printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	while (pmove != NULL)
+	{
+		printf(" %d\t%s\t%s\t%f\t%f\t%f│\n", pmove->data.num, pmove->data.caiming, pmove->data.maicairen,
+			pmove->data.danjia, pmove->data.jin, pmove->data.zhekou);
+		printf("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n");
+		pmove = pmove->next;
+	}
+	printf("\n");
+}
+
+void menu()
+{
+	printf("┏━━┯━━━━━━【蔬菜记录表】━━━━━━━━┐\n");
+	printf("┃ 0┃ 打印蔬菜信息表             ┃\n");
+	printf("┃━━┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("┃ 1┃ 输入卖菜人查询卖菜人信息   ┃\n");
+	printf("┃━━┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("┃ 2┃ 输入新菜名插入并输出       ┃\n");
+	printf("┃━━┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("┃ 3┃ 输入旧菜名删除并输出       ┃\n");
+	printf("┃━━┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("┃ 4┃ 求每种菜金额               ┃\n");
+	printf("┃━━┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("┃ 5┃ 输出所有菜的总数量和总金额 ┃\n");
+	printf("┃━━┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("┃ 6┃ 所有菜按金额进行降序排序   ┃\n");
+	printf("┃━━┃━━━━━━━━━━━━━━━━━━━━━━━━━━━━┃\n");
+	printf("┃ 7┃ 退出系统                   ┃\n");
+	printf("┗━━┷━━━━━━━━━━━━━━━━━━━━━━━━━━━━┘\n");
+	printf("请输入功能选项(0..7)\n");
+}
+
+void keydown()
+{
+	int choice = 0;
+	struct vege data;
+	shucai*result = NULL;
+	scanf("%d", &choice);
+	switch (choice)
+	{
+	case 0:
+		savefile(list, "a.txt");
+		print(list);
+		break;
+	case 1:
+		printf("请输入卖菜人名字来查找\n");
+		scanf("%s", data.maicairen);
+		result = search(list, data.maicairen);
+		if (result == NULL)
+		{
+			printf("未找到\n");
+		}
+		else
+		{
+			printf("────────────────────────────────────────────────────────────────\n");
+			printf("编号\t菜名\t卖菜人\t单价\t\t数量\t\t折扣\n");
+			printf("────────────────────────────────────────────────────────────────\n");
+			printf("%d\t%s\t%s\t%f\t%f\t%f\n", result->data.num, result->data.caiming,
+				result->data.maicairen, result->data.danjia, result->data.jin, result->data.zhekou);
+			printf("────────────────────────────────────────────────────────────────\n");
+		}
+		break;
+	case 2:
+		printf("请输入新蔬菜信息(编号，菜名，卖菜人，单价，数量，折扣)\n");
+		printf("────────────────────────────────────────────────────────────────\n");
+		scanf("%d%s%s%f%f%f", &data.num, data.caiming, data.maicairen, &data.danjia, &data.jin, &data.zhekou);
+		insert(list, data);
+		savefile(list, "a.txt");
+		print(list);
+		n = n + 1;
+		break;
+	case 3:
+		printf("请输入菜名来删除\n");
+		scanf("%s", data.caiming);
+		delete(list, data.caiming);
+		savefile(list, "a.txt");
+		print(list);
+		n = n - 1;
+		break;
+	case 4:
+		typesum(list, n);
+		break;
+	case 5:
+		sum(list, n);
+		break;
+	case 6:
+		sort(list, n);
+		break;
+	case 7:
+		printf("退出系统\n");
+		exit(0);
+		break;
+	default:
+		printf("输入错误\n");
+		break;
+	}
+}
+//读取文件操作
+void readfile(shucai*head, char*filename)
+{
+	FILE*fp = fopen(filename, "r");
+	if (fp == NULL)
+	{
+		fp = fopen(filename, "w+");
+	}
+	struct vege result;
+	while (fscanf(fp, "%d\t%s\t%s\t%f\t%f\t%f\n", &result.num, result.caiming, result.maicairen, &result.danjia, &result.jin, &result.zhekou) != EOF)
+	{
+		insertbytail(head, result);
+	}
+
+	fclose(fp);
+}
+//写出保存文件操作
+void savefile(shucai*head, char*filename)
+{
+	FILE*fp = fopen(filename, "w");
+	shucai*pmove = head->next;
+	while (pmove != NULL)
+	{
+		fprintf(fp, "%d\t%s\t%s\t%f\t%f\t%f\n", pmove->data.num, pmove->data.caiming, pmove->data.maicairen, pmove->data.danjia, pmove->data.jin, pmove->data.zhekou);
+		pmove = pmove->next;
+	}
+	fclose(fp);
+}
+int main()
+{
+	list = createlist();
+	readfile(list, "a.txt");
+	menu();
+	keydown();
+	return 0;
+}

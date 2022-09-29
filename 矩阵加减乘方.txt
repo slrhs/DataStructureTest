@@ -1,0 +1,253 @@
+#define MAXSIZE 1000
+#define MAXROW 100
+#define  _CRT_SECURE_NO_WARNINGS
+#include<stdio.h>
+#include<stdlib.h>
+int flag = 1;
+typedef struct
+{
+	int row, col;
+	long long e;
+}Triple;
+
+typedef struct
+{
+	Triple data[MAXSIZE + 1];
+	int position[MAXROW + 1];
+	int m, n, len;
+}TSMatrix;
+
+void init_matrix(TSMatrix*M, int p)
+{
+	long long x, y, z;
+	int mrow = 0, mcol = 0; M->len = 0;
+	if (p == 1) { printf("请输入A矩阵的行数row，列数col，数据e，输入0,0,0结束输入\n"); }
+	else{ printf("请输入B矩阵的行数row，列数col，数据e，输入0,0,0结束输入\n"); }
+	for (int i = 1;; i++)
+	{
+		scanf("%lld,%lld,%lld", &x, &y, &z);
+		if (x == 0 && y == 0 && z == 0) break;
+		M->data[i].row = x; M->data[i].col = y; M->data[i].e = z;
+		M->len++;
+		if (mrow < x) mrow = x;
+		if (mcol < y) mcol = y;
+	}
+	M->m = mrow; M->n = mcol;
+}
+
+void FastTransMatrix(TSMatrix M, TSMatrix* T)
+{
+	T->n = M.m; T->m = M.n; T->len = M.len; int i, t, j, p, q;
+	if (T->len)
+	{
+		int number[100]; int position[100];
+		for (i = 1; i <=M.n; i++) number[i] = 0;
+		for (t = 1; t <= M.len; t++) number[M.data[t].col]++;
+		position[1] = 1;
+		for (j = 2; j <=M.n; j++) position[j] = position[j - 1] + number[j - 1];
+		for (p = 1; p <=M.len; p++)
+		{
+			j = M.data[p].col; q = position[j];
+			T->data[q].row = M.data[p].col;
+			T->data[q].col = M.data[p].row;
+			T->data[q].e = M.data[p].e;
+			position[j]++;
+		}
+	}
+}
+
+void firstrowdata(TSMatrix *C)
+{
+	int number[100];
+	for (int i = 1; i <= C->m; i++) number[i] = 0;
+	for (int j = 1; j <= C->len; j++) number[C->data[j].row]++;
+	C->position[1] = 1;
+	for (int k = 2; k <= C->m; k++) C->position[k] = C->position[k - 1] + number[k - 1];
+}
+
+int MultMatrix(TSMatrix A, TSMatrix B, TSMatrix *C)
+{
+	if (A.n != B.m) { flag = 0; printf("输入错误，前矩阵列=后矩阵行\n"); return 0; }
+	C->m = A.m; C->n = B.n; C->len = 0; long long sum[100]; int ta, tb; int brow, ccol;
+	firstrowdata(&A); firstrowdata(&B);
+	if (A.len*B.len != 0)
+	{
+		for (int arow = 1; arow <= A.m; arow++)
+		{
+			for (int ccol = 1; ccol <= C->n; ccol++)  sum[ccol] = 0;
+			C->position[arow] = C->len + 1;
+			if (arow<A.m)
+				ta = A.position[arow + 1];
+			else ta = A.len + 1;
+			for (int p = A.position[arow]; p<ta; p++)
+			{
+				brow = A.data[p].col;
+				if (brow<B.m)
+					tb = B.position[brow + 1];
+				else tb = B.len + 1;
+				for (int q = B.position[brow]; q<tb; q++)
+				{
+					ccol = B.data[q].col;
+					sum[ccol] += A.data[p].e*B.data[q].e;
+				}
+			}
+			for (ccol = 1; ccol <= C->n; ccol++)
+				if (sum[ccol])
+				{
+				if (++C->len>MAXSIZE) return 0;
+				C->data[C->len].row = arow;
+				C->data[C->len].col = ccol;
+				C->data[C->len].e = sum[ccol];
+				}
+		}
+	}
+}
+
+void add(TSMatrix *A, TSMatrix *B)
+{
+	if (A->m != B->m&&A->n != B->n) { printf("输入错误，必须是同纬矩阵\n"); return; }
+	long long shuju[100] = { 0 };  long long shuju1[100] = { 0 }; long long shuju2[100] = { 0 }; int ka = 0, kb = 0;
+	for (int i = 1; i <= A->len; i++)
+	{
+		ka = ((A->data[i].row) - 1)*(A->n) + (A->data[i].col) - 1;
+		shuju[ka] = A->data[i].e;
+	}
+	for (int i = 1; i <= B->len; i++)
+	{
+		kb = ((B->data[i].row) - 1)*(B->n) + (B->data[i].col) - 1;
+		shuju1[kb] = B->data[i].e;
+	}
+	for (int j = 0; j < A->m*A->n; j++) shuju2[j] = shuju[j] + shuju1[j];
+	for (int j = 0; j < A->m*A->n; j++)
+	{
+		printf("%12lld", shuju2[j]);
+		if ((j + 1) % A->n == 0)printf("\n");
+	}
+	printf("\n");
+}
+
+void sub(TSMatrix *A, TSMatrix *B)
+{
+	if (A->m != B->m&&A->n != B->n) { printf("输入错误，必须是同纬矩阵\n"); return; }
+	long long shuju[100] = { 0 };  long long shuju1[100] = { 0 }; long long shuju2[100] = { 0 }; int ka = 0, kb = 0;
+	for (int i = 1; i <= A->len; i++)
+	{
+		ka = ((A->data[i].row) - 1)*(A->n) + (A->data[i].col) - 1;
+		shuju[ka] = A->data[i].e;
+	}
+	for (int i = 1; i <= B->len; i++)
+	{
+		kb = ((B->data[i].row) - 1)*(B->n) + (B->data[i].col) - 1;
+		shuju1[kb] = B->data[i].e;
+	}
+	for (int j = 0; j < A->m*A->n; j++) shuju2[j] = shuju[j]-shuju1[j];
+	for (int j = 0; j < A->m*A->n; j++)
+	{
+		printf("%12lld", shuju2[j]);
+		if ((j + 1) % A->n == 0)printf("\n");
+	}
+	printf("\n");
+}
+
+void show_matrix(TSMatrix *T, int p)
+{
+	long long shuju[100] = { 0 }; int k = 0;
+	for (int i = 1; i <= T->len; i++)
+	{
+		k = ((T->data[i].row) - 1)*(T->n) + (T->data[i].col) - 1;
+		shuju[k] = T->data[i].e;
+	}
+	if (p == 1)
+	{printf("A矩阵为\n");}
+	else if (p == 2)
+	{printf("B矩阵为\n");}
+	else if (p == 3)
+	{printf("C矩阵为(C=AxB)\n");}
+	else if (p == 4)
+	{printf("原来的矩阵为\n");}
+	else if (p == 5)
+	{printf("转置后的矩阵为\n");}
+	else if (p == 6)
+	{printf("矩阵的幂的结果为：\n");}
+	for (int j = 0; j < T->m*T->n; j++)
+	{
+		printf("%12lld", shuju[j]);
+		if ((j + 1) % T->n == 0)printf("\n");
+	}
+	printf("\n");
+}
+
+void menu()
+{
+	printf("┌──矩阵计算器──┐\n");
+	printf("│  1 \t矩阵加法    │\n");
+	printf("├─────────┤\n");
+	printf("│  2 \t矩阵减法    │\n");
+	printf("├─────────┤\n");
+	printf("│  3 \t矩阵转置    │\n");
+	printf("├─────────┤\n");
+	printf("│  4 \t矩阵乘法    │\n");
+	printf("├─────────┤\n");
+	printf("│  5 \t矩阵乘方    │\n");
+	printf("└─────────┘\n");
+	printf("请在1~5中选择\n");
+}
+
+int main()
+{
+	int c; int n;
+	TSMatrix A;
+	TSMatrix B;
+	TSMatrix C;
+	TSMatrix D[20];
+	menu();
+	while (1)
+	{
+		switch (getchar())
+		{
+		case '1':
+			system("cls");
+			init_matrix(&A, 1); show_matrix(&A, 1);
+			init_matrix(&B, 2); show_matrix(&B, 2);
+			printf("A+B结果为：\n");
+			add(&A, &B);
+			break;
+		case '2':
+			system("cls");
+			init_matrix(&A, 1); show_matrix(&A, 1);
+			init_matrix(&B, 2); show_matrix(&B, 2);
+			printf("A-B结果为：\n");
+			sub(&A, &B);
+			break;
+		case '3':
+			system("cls");
+			init_matrix(&A, 1);
+			show_matrix(&A, 4);
+			FastTransMatrix(A, &B);
+			show_matrix(&B, 5);
+			break;
+		case '4':
+			system("cls");
+			init_matrix(&A, 1);	printf("\n");
+			show_matrix(&A, 1);
+			init_matrix(&B, 2);	printf("\n");
+			show_matrix(&B, 2);
+			MultMatrix(A, B, &C);
+			if (flag)show_matrix(&C, 3);
+			break;
+		case '5':
+			system("cls");
+			init_matrix(&D[1], 1);	printf("\n");
+			show_matrix(&D[1], 4);
+			printf("请输入矩阵的幂(大于0的整数)："); scanf("%d", &n);
+			for (int i = 1; i < n; i++)
+				MultMatrix(D[1], D[i], &D[i+1]);
+			show_matrix(&D[n], 6);
+			break;
+		default:
+			printf("\n\n"); menu(); printf("\n");
+			break;
+		}
+	}
+	return 0;
+}

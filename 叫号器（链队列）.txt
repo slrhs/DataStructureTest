@@ -1,0 +1,169 @@
+#define  _CRT_SECURE_NO_WARNINGS
+#define MAXSIZE  9
+#include<string.h>
+#include<stdio.h>
+int count = 0;
+
+typedef struct LQNode
+{
+	int data;
+	struct LQNode *next;
+}lqnode;
+
+typedef struct
+{
+	lqnode * front, *rear;
+}lqueue;
+
+lqueue* initlqueue()
+{
+	lqueue* Q = (lqueue*)malloc(sizeof(lqueue));
+	lqnode* p = (lqnode*)malloc(sizeof(lqnode));
+	p->next = NULL; Q->front = p; Q->rear = p;
+	return Q;
+}
+
+void  pushlqueue(lqueue*Q, int x)
+{
+	lqnode* pnode = (lqnode*)malloc(sizeof(lqnode));
+	pnode->data = x;
+	pnode->next = NULL;
+	Q->rear->next = pnode;
+	Q->rear = pnode;
+}
+
+int poplqueue(lqueue* Q)
+{
+
+	int x;
+	lqnode* p = (lqnode*)malloc(sizeof(lqnode));
+	p = Q->front->next;
+	Q->front->next = p->next;
+	x = p->data;
+	if (p == Q->rear)Q->rear = Q->front;
+	free(p);
+	return x;
+}
+
+int getfront(lqueue*Q)
+{
+	int x;
+	lqnode* p = (lqnode*)malloc(sizeof(lqnode));
+	if (Q->front == Q->rear) return 0;
+	p = Q->front->next;
+	x = p->data;
+	return x;
+}//可以删掉
+
+int numlqueue(lqueue* Q)
+{
+	int i = 0;
+	lqnode* p = (lqnode*)malloc(sizeof(lqnode));
+	p = Q->front;
+	while (Q->rear != p)
+	{
+		i++;
+		p = p->next;
+	}
+	return i;
+}
+menu()
+{
+	printf("┌───┬──────────────────────────────┐\n");
+	printf("│  1\t│\t客户：  叫号                                          │\n");
+	printf("│───│──────────────────────────────│\n");
+	printf("│  2\t│\t柜员：  取号                                          │\n");
+	printf("│───│──────────────────────────────│\n");
+	printf("│  3\t│\t柜员：  选定窗口，处理完毕                            │\n");
+	printf("│───│──────────────────────────────│\n");
+	printf("│  4\t│\t柜员：  退出程序                                      │\n");
+	printf("└───┴──────────────────────────────┘\n");
+	printf("请输入1~4\n");
+}
+
+int a[4] = { 0, 0, 0, 0 };
+
+int main()
+{
+	lqueue*Q = initlqueue();
+	menu();
+	while (1)
+	{
+		keydown(Q);
+	}
+	return 0;
+}
+keydown(lqueue*Q)
+{
+	int call;
+	int k = 0; int n; int i; int p; int j = 0; int x; int m;
+	scanf("%d", &call);
+	switch (call)
+	{
+	case 1:
+		++count;
+		pushlqueue(Q, count);
+		if (count <= 4)
+		{
+			p = 0;
+		}
+		else
+		{
+			for (i = 0; i<4; i++)
+			{
+				if (a[i] == 0)
+				{
+					j++;
+				}
+			}
+			switch (j)
+			{
+			case 0:p = numlqueue(Q); break;
+			case 1:p = numlqueue(Q) - 1; break;
+			case 2:p = numlqueue(Q) - 2; if (p < 0) p = 0; break;
+			case 3:p = numlqueue(Q) - 3; if (p < 0) p = 0; break;
+			case 4:p = numlqueue(Q) - 4; if (p < 0) p = 0; break;
+			}
+		}
+		printf("你的编号为%d号，你前面还有%d个人，请耐心等候\n\n", count, p);
+		break;
+
+	case 2:
+		if (a[0] != 0 && a[1] != 0 && a[2] != 0 && a[3] != 0)
+		{
+			printf("4个处理窗口还有人，请先按3，处理完毕再按2\n");
+			break;
+		}
+		for (n = 0; n<4; n++)
+		{
+			if (a[n] == 0)
+			{
+				a[n] = poplqueue(Q);
+				k = n + 1;
+				m = a[n];
+				break;
+			}
+		}
+		
+	
+		if (count <= 4) { printf("请%d号前往%d号办理窗口\n\n", count, k); }
+		else{ printf("请%d号前往%d号办理窗口\n\n", m, k); }
+		break;
+	case 3:
+
+		printf("请输入几号窗口处理完毕\n");
+		scanf("%d", &x);
+		switch (x)
+		{
+		case 1:a[0] = 0; break;
+		case 2:a[1] = 0; break;
+		case 3:a[2] = 0; break;
+		case 4:a[3] = 0; break;
+		}
+		printf("%d号窗口处理完毕,可以接待下一位\n\n", x);
+		break;
+	case 4:
+		printf("欢迎下次使用，按回车退出程序\n\n");
+		exit(0);
+	}
+}
